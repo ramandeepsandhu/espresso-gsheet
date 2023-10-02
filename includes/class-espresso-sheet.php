@@ -58,9 +58,12 @@ class EspressoGSheet {
 		$googleSheet    = new EspressoGSheet_API($this->get_plugin_name(), $this->get_version(), $common); 
 		$events 		= new EspressoGSheet_Events($this->get_plugin_name(), $this->get_version(), $common);	
 		$settings 		= new EspressoGSheet_Settings($this->get_plugin_name(), $this->get_version(), $events, $googleSheet, $common);
+
+		
 		$this->loader->add_action('admin_menu', $settings, 'espresso_gsheet_admin_menu');
 		$this->loader->add_action('admin_init', $settings, 'settings_init');
 		$this->loader->add_action('admin_post_google_settings',	$settings, 'google_settings');
+		$this->loader->add_action('post_updated', $googleSheet, 'attach_spreadsheet_info');
 
 		//$this->loader->add_action('admin_menu', $settings, 'espresso_gsheet_settings_menu');
 

@@ -102,6 +102,79 @@ class EspressoGSheet_API {
 		}
 	}
 
+	public function attach_spreadsheet_info( $post_id ) {
+
+        $post_type = get_post_type($post_id);
+
+        if ( "espresso_events" == $post_type ) {
+            $post   = get_post( $post_id );
+            $title = $post->post_title;
+            $this->create_spreadsheet($title);
+            $meta = get_post_meta( $post_id, 'GoogleSpreadsheet_URL' );
+            if( $meta[0] == 'Yes' ) {
+            
+            }else{
+
+                add_post_meta($post_id, 'GoogleSpreadsheet_URL ', 'https://google.com', true); // unique 
+                add_post_meta($post_id, 'GoogleSpreadsheet_ID ', '', true); // unique 
+            }
+
+        }
+    } 
+
+    public function getClient(){
+    	$client = new \Google_Client();
+		$client->setApplicationName('Google Sheets API');
+		//$client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
+		$client->setScopes(array(Google_Service_Sheets::SPREADSHEETS, Google_Service_Drive::DRIVE));
+		$client->setAccessType('offline');
+
+    	//$client->setScopes('https://www.googleapis.com/auth/spreadsheets');
+		// credentials.json is the key file we downloaded while setting up our Google Sheets API
+		$credential = 	get_option( 'espresso_gsheet_google_credential', false );
+	
+		$client->setAuthConfig(json_decode($credential, true));
+
+		return $client;
+		
+    }
+
+    public function create_spreadsheet($title)
+	{   
+	    $client = $this->getClient();
+	    $service = new Google_Service_Sheets($client);
+	    try{
+
+	        $spreadsheet = new Google_Service_Sheets_Spreadsheet([
+	            'properties' => [
+	                'title' => $title
+	                ]
+	        ]);
+            $spreadsheet = $service->spreadsheets->create($spreadsheet, [
+                'fields' => 'spreadsheetId'
+            ]);
+            
+            printf("Spreadsheet ID: %s\n", $spreadsheet->spreadsheetId);
+
+            if($spreadsheet->spreadsheetId){
+            	$drive = new \Google_Service_Drive($client);
+				$permission = new \Google_Service_Drive_Permission();
+				$permission->setEmailAddress('sandhu.raman@gmail.com');
+				$permission->setType('group');
+				$permission->setRole('writer');
+				$res = $drive->permissions->create($spreadsheet->spreadsheetId, $permission);
+			}
+			echo '<pre>';
+			print_r($res);
+
+	            //return $spreadsheet->spreadsheetId;
+	    }
+	    catch(Exception $e) {
+	        // TODO(developer) - handle error appropriately
+	        echo 'Message: ' .$e->getMessage();
+	      }
+	}
+
 	function my_error_notice() {
 	    ?>
 	    <div class="error notice">

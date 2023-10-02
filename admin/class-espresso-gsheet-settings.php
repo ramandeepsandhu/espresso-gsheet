@@ -251,28 +251,7 @@ class EspressoGSheet_Settings {
 		
 	}
 
-	public function create($title)
-	{   
-	    $client = getClient();
-	    $service = new Google_Service_Sheets($client);
-	    try{
-
-	        $spreadsheet = new Google_Service_Sheets_Spreadsheet([
-	            'properties' => [
-	                'title' => $title
-	                ]
-	            ]);
-	            $spreadsheet = $service->spreadsheets->create($spreadsheet, [
-	                'fields' => 'spreadsheetId'
-	            ]);
-	            printf("Spreadsheet ID: %s\n", $spreadsheet->spreadsheetId);
-	            return $spreadsheet->spreadsheetId;
-	    }
-	    catch(Exception $e) {
-	        // TODO(developer) - handle error appropriately
-	        echo 'Message: ' .$e->getMessage();
-	      }
-	}
+	
 
 	
 

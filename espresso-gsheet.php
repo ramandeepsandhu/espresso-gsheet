@@ -27,20 +27,14 @@ function run_espresso_gsheet(){
         $plugin->run();
 }
     
+
     # 786
     run_espresso_gsheet();
 
 
-    add_action( 'post_updated', 'set_post_default_category');
-
-function set_post_default_category( $post_id ) {
-        $post_type = get_post_type($post_id);
-
-        if ( "espresso_events" == $post_type ) {
+    
 
 
-        }
-}
 
 
 
