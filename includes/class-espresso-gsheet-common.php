@@ -33,5 +33,12 @@ class EspressoGSheet_Common {
 	public function gsheet_log(){
 		//Add logic to create logs either to database or log file
 	}
+
+
+	public function load_custom_admin_style(){
+
+		wp_register_style( 'espresso-gsheet', plugin_dir_url(dirname( __FILE__ )) . 'admin/css/admin.css', false, '1.0.0' );
+    	wp_enqueue_style( 'espresso-gsheet' );
+	}
 }
 ?>

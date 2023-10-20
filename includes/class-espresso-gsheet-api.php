@@ -102,25 +102,48 @@ class EspressoGSheet_API {
 		}
 	}
 
-	public function attach_spreadsheet_info( $post_id ) {
 
-        $post_type = get_post_type($post_id);
+	public function after_post_updated_callback( $post_id, $post) {
+		$this->attach_spreadsheet_info($post_id, $post);
+	}
 
-        if ( "espresso_events" == $post_type ) {
-            $post   = get_post( $post_id );
-            $title = $post->post_title;
-            $this->create_spreadsheet($title);
-            $meta = get_post_meta( $post_id, 'GoogleSpreadsheet_URL' );
-            if( $meta[0] == 'Yes' ) {
-            
-            }else{
+	public function acf_after_save_post_callback( $post_id ) {
+		$post   = get_post( $post_id );
+		$this->attach_spreadsheet_info($post_id, $post);
+	}
 
-                add_post_meta($post_id, 'GoogleSpreadsheet_URL ', 'https://google.com', true); // unique 
-                add_post_meta($post_id, 'GoogleSpreadsheet_ID ', '', true); // unique 
-            }
+	public function attach_spreadsheet_info( $post_id, $post) {
+		
+		if($post->post_type != 'espresso_events'){
+			return;
+		}
 
+		if (!class_exists('ACF')) {
+			$enable_spreadsheet_integration = get_post_meta( $post_id, 'enable_spreadsheet_integration', true );
+			$google_spreadsheet_id = get_post_meta( $post_id, 'google_spreadsheet_id',  true );
+			$google_spreadsheet_url = get_post_meta( $post_id, 'google_spreadsheet_url', true );
+		}else{
+			$enable_spreadsheet_integration = get_field('enable_spreadsheet_integration');
+			$google_spreadsheet_id = get_field( $post_id, 'google_spreadsheet_id' );
+			$google_spreadsheet_url = get_field( $post_id, 'google_spreadsheet_url' );
+			$enable_spreadsheet_integration = get_post_meta( $post_id, 'enable_spreadsheet_integration', true );
+		}
+
+		$title = $post->post_title;
+
+		if($enable_spreadsheet_integration == 'yes'){
+			if($google_spreadsheet_id){
+				
+			}else{
+				$spreadSheetID = $this->create_spreadsheet($title);
+				if($spreadSheetID){
+					update_post_meta($post_id, 'google_spreadsheet_url', 'https://docs.google.com/spreadsheets/d/'.$spreadSheetID, false); // unique 
+                	update_post_meta($post_id, 'google_spreadsheet_id', $spreadSheetID, false);
+				}
+			}
         }
-    } 
+    }
+     
 
     public function getClient(){
     	$client = new \Google_Client();
@@ -154,20 +177,15 @@ class EspressoGSheet_API {
                 'fields' => 'spreadsheetId'
             ]);
             
-            printf("Spreadsheet ID: %s\n", $spreadsheet->spreadsheetId);
-
             if($spreadsheet->spreadsheetId){
             	$drive = new \Google_Service_Drive($client);
 				$permission = new \Google_Service_Drive_Permission();
-				$permission->setEmailAddress('sandhu.raman@gmail.com');
-				$permission->setType('group');
-				$permission->setRole('writer');
-				$res = $drive->permissions->create($spreadsheet->spreadsheetId, $permission);
+				$permission->setType('anyone');
+				$permission->setRole('reader');
+				$res = $drive->permissions->create($spreadsheet->spreadsheetId,$permission);
 			}
-			echo '<pre>';
-			print_r($res);
 
-	            //return $spreadsheet->spreadsheetId;
+	        return $spreadsheet->spreadsheetId;
 	    }
 	    catch(Exception $e) {
 	        // TODO(developer) - handle error appropriately
@@ -175,10 +193,92 @@ class EspressoGSheet_API {
 	      }
 	}
 
+	function add_attendee_to_spreadsheet($args = array()){
+
+		EE_Registry::instance()->load_model('Transaction');
+    	$transaction = EE_Registry::instance()->load_model('Transaction')->get_transaction_from_reg_url_link();
+
+		if ( ! $transaction instanceof EE_Transaction ) {
+			return;
+		}
+
+  		$registrations = $transaction->registrations();
+    	
+    	foreach ($registrations as $registration) {
+
+			$post_id = $registration->event()->ID();
+			$meta = get_post_meta( $post_id, 'google_spreadsheet_id');
+            
+            if( isset($meta[0]) ) {
+
+            	$spreadsheetId = $meta[0];
+  		        $transaction_status = ($transaction->is_completed())?'Completed':'Not Completed';
+
+		        $client = $this->getClient();
+		        $service = new Google_Service_Sheets($client);
+		        $range = 'Sheet1';
+
+		        try{	
+		        	$response = $service->spreadsheets_values->get($spreadsheetId, $range);
+		        	$values = $response->getValues();
+
+		        	if(!$values){
+		        		$rows[] = $this->headers();
+		        	}
+
+		        	$author_id = $registration->attendee()->wp_user();
+	        		$user_data = get_userdata((int) $author_id);
+
+		        	$rows[] = [
+		        		$registration->attendee()->full_name(true),
+		            	$registration->attendee()->email(true),
+		            	$registration->attendee()->phone(true),
+		            	$registration->attendee()->address(true),
+		            	$registration->attendee()->address2(true),
+		            	$registration->attendee()->city(true),
+		            	$registration->attendee()->state_name(true),
+		            	$registration->attendee()->country_name(true),
+		            	$registration->attendee()->zip(true),
+		            	$user_data->user_nicename,
+		            	$user_data->user_email,
+		            	$transaction_status
+		            ];
+
+		        	$valueRange = new \Google_Service_Sheets_ValueRange();
+					$valueRange->setValues($rows);
+					$options = ['valueInputOption' => 'USER_ENTERED'];
+					$service->spreadsheets_values->append($spreadsheetId, $range, $valueRange, $options);
+
+		        }catch(Exception $e) {
+		        	// TODO(developer) - handle error appropriately
+		        	echo 'Message: ' .$e->getMessage();
+		        	die;
+		      	}
+		    }
+        }
+	}
+
+	private function headers(){
+		return [
+	            'Attendees Full Name', 
+	            'Email',
+	            'Phone',
+	            'Address',
+	            'Address 2',
+	            'City',
+	            'State',
+	            'Country',
+	            'Zip',
+	            'Users Full Name',
+	            'Email',
+	            'Payment Status'
+	        ];
+	}
+
 	function my_error_notice() {
 	    ?>
 	    <div class="error notice">
-	        <p><?php _e( 'There has been an error. Bummer!', 'my_plugin_textdomain' ); ?></p>
+	        <p><?php _e( 'There has been an error!', 'load_espresso_gsheet' ); ?></p>
 	    </div>
 	    <?php
 	}
@@ -189,17 +289,14 @@ class EspressoGSheet_API {
 		# Check access_token elements is set or not;
 		if(! isset($this->token()['access_token']) OR empty($this->token()['access_token'])){
 			add_action( 'admin_notices', 'my_error_notice' );
-			//$this->common->gsheet_log( get_class($this),__METHOD__, "307", "ERROR: access_token elements is_not_set OR access_token is empty !");
 			return array( FALSE, "ERROR: access_token elements is_not_set OR access_token is empty !" );
 		}
 		# If passed parameter is Array and Not String  || Creating Query URL
 		$request = wp_remote_get( "https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=" . $this->token()['access_token']);
 		# is_wp_error()
 		if(is_wp_error($request) OR ! isset($request['response']['code'])  OR $request['response']['code'] != 200){
-			//$this->common->gsheet_log(get_class($this),__METHOD__, "309", "ERROR: Token Validation Checked, Invalid token [x]. Response is : " . json_encode($request));
 			return array(FALSE,  json_encode($request));
 		} else {
-			//$this->common->gsheet_log(get_class($this), __METHOD__, "200", "SUCCESS: Token Validation Checked, Valid Token [ok].");
 			return  array(TRUE, $request['body']);
 		}
 	}
@@ -219,22 +316,18 @@ class EspressoGSheet_API {
 
 		# Check is Token array or not
 		if(! is_array( $credential )  ){
-			//$this->common->gsheet_log(get_class($this),__METHOD__, "300", "ERROR: credential is Not Array." . $credential);
 			return array( FALSE, "ERROR: credential is Not Array !" );
 		}
 		# Check  client_email is set or not 
 		if(! isset($credential['client_email'])){
-			//$this->common->gsheet_log(get_class( $this ),__METHOD__,"301", "ERROR: client_email not set.");
 			return array( FALSE, array('ERROR:'=> 420 , 'Message' => 'ERROR: client_email not set.'));
 		}
 		#  check client_email is empty or not
 		if( empty($credential['client_email'])){
-			//$this->common->gsheet_log(get_class( $this ), __METHOD__, "302", "ERROR: client_email is Empty.");
 			return array( FALSE, array('ERROR:'=> 420 , 'Message' => "ERROR: client_email is Empty."));
 		}
 		# Check private_key is set or not
 		if(! isset($credential['private_key'])){
-			//$this->common->gsheet_log(get_class( $this ),__METHOD__,"303", "ERROR: private_key not set.");
 			return array( FALSE, array('ERROR:'=> 420 , 'Message' => "ERROR: private_key not set."));
 		}
 		# Check private_key is Empty or not
@@ -266,11 +359,9 @@ class EspressoGSheet_API {
 		# Check & Balance 
 		if(is_wp_error($returns) OR !is_array($returns) OR !isset($returns['body'])){
 			# Inserting error log 
-			//$this->common->gsheet_log( get_class($this),__METHOD__,"305","ERROR:  on token Creation." . json_encode($returns, TRUE));
 			return array(FALSE, "ERROR :  on token Creation." . json_encode($returns, TRUE));
 		} else {
 			# inserting SUCCESS log
-			//$this->common->gsheet_log(get_class($this),__METHOD__,"200","SUCCESS: Successfully token created.");
 			return array(TRUE, json_decode($returns['body'], TRUE));
 		}
 	}
@@ -293,7 +384,6 @@ class EspressoGSheet_API {
 				update_option('espresso_gsheet_google_token', $new_token[1]);
 			}else{
 				# ERROR : false credential ! Google said so ;-D ;
-				//$this->common->gsheet_log(get_class($this), __METHOD__,"504", "ERROR: false credential ! Google said so ;-D. from  GoogleSpreadsheets func. " . json_encode($new_token));
 				# return the valid token;
 				return false;
 			}

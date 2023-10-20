@@ -1,0 +1,18 @@
+/**
+ * All of the CSS for your admin-specific functionality should be
+ * included in this file.
+ */
+
+
+div.wpcf7-response-output {
+	margin: 1rem 0;
+	padding: .5rem 1rem;
+	background: #f3b7bd;
+	font-size: .875rem;
+	color:#921925
+}
+
+.eg-connected-success {
+	background: #6fde61;
+	color:#145523
+}
