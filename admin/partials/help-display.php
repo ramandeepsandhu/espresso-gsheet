@@ -10,17 +10,17 @@
 <!-- This file should primarily consist of HTML with a little bit of PHP. -->
 <div class='wrap'>
     <div id="icon-options-general" class="icon32"> </div>
-	<h1> <?php esc_attr_e( "Step-by-Step instructions to create service account : HMM", "wpgsi" ); ?> </h1>
+	<h1> <?php esc_attr_e( "Step-by-Step instructions to create service account" ); ?> </h1>
 
     <div id="service_account_help">
         <div id='step_1'>
             <h3> Step 1 : </h3>
             <p>
-                <b>1.</b> Click to the <code> <b>Spreadsheet Integration</b></code> button on WP Admin.
+                <b>1.</b> Click to the <code> <b>Event Espresso Spread Sheet</b></code> menu item on WP Admin.
                 <br><br>
-                <b>2.</b> Click to the <code> <b>Settings</b></code> button.
+                <b>2.</b> Click to the <code> <b>Settings</b></code> section.
                 <br><br>
-                <b>3.</b> Click to the <code> <b>enable API & create a service account</b></code> link. It will open Google API console in another Browser Tab. See the next step.
+                <b>3.</b> Click to the <code> <b>Enable API & create a service account</b></code> link. It will open Google API console in another Browser Tab. See the next step.
                 <br><br>
                 <!-- Loading Starts -->
                 <img  style="display: block; margin: 0 auto;"  width="80%" height="80%" src="<?php echo plugins_url( '../css/screenshot-1.png', __FILE__  ); ?>" alt="loading...">
@@ -200,7 +200,7 @@
         <div id='step_9'>
             <h3> Step 9 : </h3>
             <p>
-                <b>1.</b> Click to the <code> <b>Spreadsheet Integration</b></code> button on WP Admin.
+                <b>1.</b> Click to the <code> <b>Event Espresso Spread Sheet</b></code> menu on WP Admin.
                 <br><br>
                 <b>2.</b> Click to the <code> <b> Settings</b></code> 
                 <br><br>
@@ -208,7 +208,7 @@
                 <br><br>
                 <b>4.</b>  Make sure Key ends with   <code> <b> } </b></code> 
                 <br><br>
-                <b>5.</b>  Click  on  the <code> <b> SAVE</b></code>  button.
+                <b>5.</b>  Click  on  the <code> <b> Save Changes</b></code>  button.
                 <br><br>
                 <!-- Loading Starts -->
                 <img  style="display: block; margin: 0 auto;"  width="80%" height="80%" src="<?php echo plugins_url( '../css/screenshot-20.png', __FILE__  ); ?>" alt="loading...">
@@ -220,11 +220,9 @@
         <div id='step_10'>
             <h3> Step 10 : </h3>
             <p>
-                <b>1.</b> This is your service account Email address, share your Google sheets with this address. 
+                <b>1.</b> If everything is Okay this <code><b> <span class="dashicons dashicons-yes"></span></b></code> will show with a success message. e.g. Your account is successfully integrated with Google spreadsheet with this service account email address: XXXXXXXX
                 <br><br>
                 <b>2.</b> For Remove click <code> <b> Remove Credentials</b></code>  button.
-                <br><br>
-                <b>3.</b> If everything is Okay this <code><b> <span class="dashicons dashicons-yes"></span></b></code> will show.
                 
             </p>
         </div>

@@ -30,8 +30,14 @@ class EspressoGSheet_Common {
 		$this->version 		= $version;					# Version of this Plugin setting for this Class
 	}
 
-	public function gsheet_log(){
-		//Add logic to create logs either to database or log file
+	public function gsheet_log($log){
+
+		$log = array_merge(['datetime' => date('Y-m-d H:i:s')], $log);
+		$fileName = date('Y-m').'_log.txt';
+		$myfile = fopen(plugin_dir_path( dirname( __FILE__ ) ). "logs/". $fileName, "a+") or die("File does not exist!");
+		$txt = print_r($log, true);
+		fwrite($myfile, $txt);
+		fclose($myfile);
 	}
 
 

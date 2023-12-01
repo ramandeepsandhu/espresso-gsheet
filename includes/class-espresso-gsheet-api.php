@@ -166,8 +166,8 @@ class EspressoGSheet_API {
 	{   
 	    $client = $this->getClient();
 	    $service = new Google_Service_Sheets($client);
-	    try{
 
+	    try{
 	        $spreadsheet = new Google_Service_Sheets_Spreadsheet([
 	            'properties' => [
 	                'title' => $title
@@ -178,101 +178,127 @@ class EspressoGSheet_API {
             ]);
             
             if($spreadsheet->spreadsheetId){
-            	$drive = new \Google_Service_Drive($client);
-				$permission = new \Google_Service_Drive_Permission();
-				$permission->setType('anyone');
-				$permission->setRole('reader');
-				$res = $drive->permissions->create($spreadsheet->spreadsheetId,$permission);
+            	try{
+	            	$drive = new \Google_Service_Drive($client);
+					$permission = new \Google_Service_Drive_Permission();
+					$permission->setType('anyone');
+					$role = get_option('espresso_gsheet_role', 'reader');
+					$permission->setRole($role);
+					$res = $drive->permissions->create(
+						$spreadsheet->spreadsheetId,
+						$permission, 
+						//['transferOwnership' => 'true']
+					);
+				}catch(Exception $e) {
+		        	$this->common->gsheet_log( array(
+						'action'	=>	'create_spreadsheet', 
+						'request'	=> $spreadsheet,
+						'response'	=> $e->getMessage())
+					);
+		      	}
 			}
 
 	        return $spreadsheet->spreadsheetId;
 	    }
 	    catch(Exception $e) {
-	        // TODO(developer) - handle error appropriately
-	        echo 'Message: ' .$e->getMessage();
+	        $this->common->gsheet_log( array(
+				'action'	=>	'initialize_Google_Service_Sheets_Spreadsheet', 
+				'response'	=> $e->getMessage())
+			);
 	      }
 	}
 
 	function add_attendee_to_spreadsheet($args = array()){
 
-		EE_Registry::instance()->load_model('Transaction');
     	$transaction = EE_Registry::instance()->load_model('Transaction')->get_transaction_from_reg_url_link();
-
+		
 		if ( ! $transaction instanceof EE_Transaction ) {
 			return;
 		}
 
   		$registrations = $transaction->registrations();
+		$answer = EE_Registry::instance()->load_model('Answer');
+		$rows = [];
     	
     	foreach ($registrations as $registration) {
-
+			
 			$post_id = $registration->event()->ID();
 			$meta = get_post_meta( $post_id, 'google_spreadsheet_id');
-            
-            if( isset($meta[0]) ) {
+			$attendee_id =	 $registration->attendee_ID();
 
+            if( isset($meta[0]) ) {
+				
             	$spreadsheetId = $meta[0];
   		        $transaction_status = ($transaction->is_completed())?'Completed':'Not Completed';
-
-		        $client = $this->getClient();
-		        $service = new Google_Service_Sheets($client);
-		        $range = 'Sheet1';
-
 		        try{	
-		        	$response = $service->spreadsheets_values->get($spreadsheetId, $range);
-		        	$values = $response->getValues();
 
-		        	if(!$values){
-		        		$rows[] = $this->headers();
-		        	}
+		        	if($registration->question_groups()){
+			    		foreach($registration->question_groups() as $question_group){
+			    			//$question_group->ID();
+			    			if($question_group->questions()){
+				    			foreach($question_group->questions() as $question){
+									$label = preg_replace("/[^a-zA-Z0-9 ]+/", "", $question->display_text());
+				    				$rows[$spreadsheetId][$attendee_id][$label] = addslashes($answer->get_answer_value_to_question($registration, $question->ID(), true));
+				    			}
+			    			}
+			    		}
+		    		}
 
-		        	$author_id = $registration->attendee()->wp_user();
-	        		$user_data = get_userdata((int) $author_id);
-
-		        	$rows[] = [
-		        		$registration->attendee()->full_name(true),
-		            	$registration->attendee()->email(true),
-		            	$registration->attendee()->phone(true),
-		            	$registration->attendee()->address(true),
-		            	$registration->attendee()->address2(true),
-		            	$registration->attendee()->city(true),
-		            	$registration->attendee()->state_name(true),
-		            	$registration->attendee()->country_name(true),
-		            	$registration->attendee()->zip(true),
-		            	$user_data->user_nicename,
-		            	$user_data->user_email,
-		            	$transaction_status
-		            ];
-
-		        	$valueRange = new \Google_Service_Sheets_ValueRange();
-					$valueRange->setValues($rows);
-					$options = ['valueInputOption' => 'USER_ENTERED'];
-					$service->spreadsheets_values->append($spreadsheetId, $range, $valueRange, $options);
+		            $rows[$spreadsheetId][$attendee_id]['Payment Status'] = $transaction_status;
+		            $rows[$spreadsheetId][$attendee_id]['Created'] = date('Y/m/d h:i:s');
 
 		        }catch(Exception $e) {
-		        	// TODO(developer) - handle error appropriately
-		        	echo 'Message: ' .$e->getMessage();
-		        	die;
+		        	$this->common->gsheet_log( array(
+						'action'	=>	'add_attendee_to_spreadsheet', 
+						'request'	=> $registrations,
+						'response'	=> $e->getMessage())
+					);
 		      	}
 		    }
         }
+
+        if($rows){
+        	$this->save_entry_to_spreadsheet($rows);
+        }
 	}
 
-	private function headers(){
-		return [
-	            'Attendees Full Name', 
-	            'Email',
-	            'Phone',
-	            'Address',
-	            'Address 2',
-	            'City',
-	            'State',
-	            'Country',
-	            'Zip',
-	            'Users Full Name',
-	            'Email',
-	            'Payment Status'
-	        ];
+	function save_entry_to_spreadsheet($attendee_records){
+		$client = $this->getClient();
+		$service = new Google_Service_Sheets($client);
+		$range = 'Sheet1';
+		
+		foreach($attendee_records as $spreadsheetId => $rows){
+			$data = [];
+			$response = $service->spreadsheets_values->get($spreadsheetId, $range);
+			$values_already_exist = $response->getValues();
+			
+			$current_row = array_pop($rows);
+			
+			$keys = array_keys($current_row);
+			$values = array_values($current_row);
+			
+			if(!$values_already_exist){
+				$data[] = $keys;
+			}
+			$data[] = $values;
+			$range = 'Sheet1';
+			try{	
+				$valueRange = new \Google_Service_Sheets_ValueRange();
+				$valueRange->setValues($data);
+				$options = ['valueInputOption' => 'USER_ENTERED'];
+				$service->spreadsheets_values->append($spreadsheetId, $range, $valueRange, $options);
+										  
+			}catch(Exception $e) {
+				
+				$this->common->gsheet_log( array(
+					'action'	=>	'save_entry_to_spreadsheet', 
+					'request'	=> $data,
+					'response'	=> $e->getMessage())
+				);
+				
+			}
+		}
+
 	}
 
 	function my_error_notice() {

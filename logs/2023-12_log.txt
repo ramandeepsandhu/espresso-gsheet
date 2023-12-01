@@ -1,0 +1,33 @@
+Array
+(
+    [datetime] => 2023-12-01 00:28:14
+    [action] => initialize_Google_Service_Sheets_Spreadsheet
+    [response] => {
+  "error": {
+    "code": 401,
+    "message": "Request is missing required authentication credential. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.",
+    "errors": [
+      {
+        "message": "Login Required.",
+        "domain": "global",
+        "reason": "required",
+        "location": "Authorization",
+        "locationType": "header"
+      }
+    ],
+    "status": "UNAUTHENTICATED",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "CREDENTIALS_MISSING",
+        "domain": "googleapis.com",
+        "metadata": {
+          "method": "google.apps.sheets.v4.SpreadsheetsService.CreateSpreadsheet",
+          "service": "sheets.googleapis.com"
+        }
+      }
+    ]
+  }
+}
+
+)

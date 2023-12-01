@@ -1,6 +1,6 @@
 <div class="wrap">
     <div id="icon-themes" class="icon32"></div>
-    <h2>Expresso Events - Google Sheet Integration</h2>
+    <h2>Event Expresso - Google Sheet Integration</h2>
     
     <?php settings_errors('espress_gsheet_settings'); ?>
 
@@ -36,7 +36,7 @@
         <br><br>
 
         <span> 
-            <b>3.</b> Please share your google spreadsheet with your service account email. Otherwise, it will not work.
+            <b>3.</b>** User's permission will be applied to newly created Google Sheet.
         </span>
         <br><br>
   

@@ -31,7 +31,7 @@ class EspressoGSheet {
 		$events 		= new EspressoGSheet_Events($this->get_plugin_name(), $this->get_version(), $common);	
 		$settings 		= new EspressoGSheet_Settings($this->get_plugin_name(), $this->get_version(), $events, $googleSheet, $common);
 
-		
+		 
 		$this->loader->add_action('admin_menu', $settings, 'espresso_gsheet_admin_menu');
 		$this->loader->add_action('admin_init', $settings, 'settings_init');
 		$this->loader->add_action('admin_post_google_settings',	$settings, 'google_settings');		
@@ -39,12 +39,19 @@ class EspressoGSheet {
 		$this->loader->add_action('admin_notices',	$this, 'wpdocs_your_admin_notices_action');
 		
 		if(get_option( 'enable_espresso_gsheet_integration', false ) ){
-			if (class_exists('ACF')) {
-				$this->loader->add_action('acf/save_post', $googleSheet, 'acf_after_save_post_callback', 10, 1);
-			}else{
-				$this->loader->add_action('post_updated', $googleSheet, 'after_post_updated_callback', 10, 2);
+
+			$response = $googleSheet->generatingTokenByCredential();
+
+			if( $response[0] ){
+				if (class_exists('ACF')) {
+					$this->loader->add_action('acf/save_post', $googleSheet, 'acf_after_save_post_callback', 10, 1);
+				}else{
+					$this->loader->add_action('post_updated', $googleSheet, 'after_post_updated_callback', 10, 2);
+				}
+				$this->loader->add_action('AHEE__EED_Thank_You_Page__init_end', $googleSheet, 'add_attendee_to_spreadsheet');
+
 			}
-			$this->loader->add_action('AHEE__EED_Thank_You_Page__init_end', $googleSheet, 'add_attendee_to_spreadsheet');
+			
 		}
 	}
 

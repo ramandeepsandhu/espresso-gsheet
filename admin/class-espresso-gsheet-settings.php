@@ -87,8 +87,8 @@ class EspressoGSheet_Settings {
 	public function espresso_gsheet_admin_menu()
     {
         add_menu_page(
-            __( 'Espresso Spread Sheet', 'espresso-gsheet' ),
-            __( 'Espresso Spread Sheet', 'espresso-gsheet' ),
+            __( 'Event Espresso Spread Sheet', 'espresso-gsheet' ),
+            __( 'Event Espresso Spread Sheet', 'espresso-gsheet' ),
             'manage_options',
             'espresso-gsheet',
             array( $this, 'espresso_gsheet_settings_view' ),
@@ -97,8 +97,8 @@ class EspressoGSheet_Settings {
        
         add_submenu_page(
             "espresso-gsheet",
-            "Help",
-            "Help",
+            "Settings",
+            "Settings",
             "manage_options",
             "espresso-gsheet-help",
             array( $this, 'espresso_gsheet_settings_help' )
@@ -167,6 +167,18 @@ class EspressoGSheet_Settings {
 			}else{
 				update_option('enable_espresso_gsheet_integration', '');
 			}
+
+			if(isset($_POST['espresso_gsheet_role'])){
+				if(get_option('espresso_gsheet_role') === FALSE){
+	                add_option('espresso_gsheet_role', $_POST['espresso_gsheet_role']);
+	            }else{
+	                update_option('espresso_gsheet_role', $_POST['espresso_gsheet_role']);
+	            }
+			}else{
+				update_option('espresso_gsheet_role', '');
+			}
+
+
 		}
 	}
 
@@ -205,11 +217,38 @@ class EspressoGSheet_Settings {
 	            array( 
 	                'option_name' => 'espresso_gsheet_google_credential',
 	                'type' => 'textarea',
-	                'tip' => 'Exactly copy the downloaded file Credentials, and Paste it above.'
+	                'tip' => 'Exactly copy the downloaded file Credentials, and Paste it above. <span style="float:right; padding-right:25px;"> <a href="https://console.developers.google.com/apis/dashboard" target="_blank" style="text-decoration: none;font-style: italic; color: #ffba00;""> Enable API & create service account</a> </span>'
 	            )  
 	        );
         }
+
+        add_settings_field( // Option 1
+            'espresso_gsheet_role', // Option ID
+            'User Spreadsheet Role **', // Label
+            array($this, 'dropdown_option_callback'), // !important - This is where the args go!
+            'espress_gsheet_settings', // Page it will be displayed (General Settings)
+            'espress_gsheet_settings_section', // Name of our section
+            array( 
+                'option_name' => 'espresso_gsheet_role',
+                'type' => 'select'
+            ));
+
         register_setting('espress_gsheet_settings','espresso_gsheet_google_credential', array($this, 'validate_credentials'));
+    }
+
+    public function dropdown_option_callback($args) {
+    	$option = get_option($args['option_name']);
+        ?> 
+
+        <select name="<?=$args['option_name'];?>" id="<?=$args['option_name'];?>">
+            <option value="reader" <?=($option == 'reader')?'selected':'';?> >reader</option>
+            <option value="commenter" <?=($option == 'commenter')?'selected':'';?>>commenter</option>
+            <option value="writer" <?=($option == 'writer')?'selected':'';?>>writer</option>
+           
+            <!--<option value="fileOrganizer" <?=($option == 'fileOrganizer')?'selected':'';?>>fileOrganizer</option>
+            <option value="organizer" <?=($option == 'organizer')?'selected':'';?>>organizer</option>
+            <option value="owner" <?=($option == 'owner')?'selected':'';?>>owner</option>-->
+        </select> <?php
     }
 
     public function validate_credentials($args){
@@ -237,9 +276,9 @@ class EspressoGSheet_Settings {
     public function status_callback() { // Section Callback
     	$ret = $this->googleSheet->token_validation_checker();
         if ( $ret[0] ) {
-        	echo "<div class='alert alert-success'>Your account is successfully integrated with Google spreadsheet with this service account email address :  " . esc_html( $this->googleSheet->client_email ) . "</div>"; 
+        	echo "<div class='alert alert-success'><span class='dashicons dashicons-yes successful-connected'></span>Your account is successfully integrated with Google spreadsheet with this service account email address :  " . esc_html( $this->googleSheet->client_email ) . "</div>"; 
         }else{
-			echo "<div class='alert alert-success'>Your account is partially connected with Google spreadsheet. Please try to reconnect again using the Google Spread sheet credentials.</div>"; 
+			echo "<div class='alert alert-success'><span class='dashicons dashicons-no error-connected'></span>Your account is partially connected with Google spreadsheet. Please try to reconnect again using the Google Spread sheet credentials.</div>"; 
         } 
         echo  "<div><a href=" . admin_url( 'admin-post.php?action=google_settings&deleteCredential=1&nonce=' ) . wp_create_nonce( 'wpgsi-google-nonce-delete' ) . " class='button-secondary' style=' text-decoration: none; color: #7f7f7f;'>  Remove Credential  </a></div>" ;
     }
@@ -251,7 +290,7 @@ class EspressoGSheet_Settings {
 
         if($args['type'] == 'textarea'){
         	echo '<textarea id="' .$args['option_name'].'" name="'. $args['option_name'] .'" cols="80" rows="8"  class="large-text"> '.$option.'</textarea>';
-        	echo '<p>' . esc_attr( $args['tip'] ) .'</p>';
+        	echo '<p>' . ( $args['tip'] ) .'</p>';
         }elseif($args['type'] == 'checkbox'){
         	$checked = ($option == 'Y')? " checked='checked'": '';
         	echo '<input class="regular-text" type="'.$args['type'].'" id="'. $args['option_name'] .'" name="'. $args['option_name'] .'" value="Y" ' . $checked . ' />';

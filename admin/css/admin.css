@@ -16,3 +16,12 @@ div.wpcf7-response-output {
 	background: #6fde61;
 	color:#145523
 }
+.successful-connected{
+	color:green;
+	font-size:30px;
+}
+
+.error-connected{
+	color:red;
+	font-size:30px;	
+}
