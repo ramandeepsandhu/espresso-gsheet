@@ -118,22 +118,21 @@ class EspressoGSheet_API {
 			return;
 		}
 
+
 		if (!class_exists('ACF')) {
 			$enable_spreadsheet_integration = get_post_meta( $post_id, 'enable_spreadsheet_integration', true );
 			$google_spreadsheet_id = get_post_meta( $post_id, 'google_spreadsheet_id',  true );
 			$google_spreadsheet_url = get_post_meta( $post_id, 'google_spreadsheet_url', true );
 		}else{
-			$enable_spreadsheet_integration = get_field('enable_spreadsheet_integration');
-			$google_spreadsheet_id = get_field( $post_id, 'google_spreadsheet_id' );
-			$google_spreadsheet_url = get_field( $post_id, 'google_spreadsheet_url' );
-			$enable_spreadsheet_integration = get_post_meta( $post_id, 'enable_spreadsheet_integration', true );
+			$enable_spreadsheet_integration = get_field('enable_spreadsheet_integration', $post_id);
+			$google_spreadsheet_id = get_field('google_spreadsheet_id', $post_id );
+			$google_spreadsheet_url = get_field('google_spreadsheet_url', $post_id);
 		}
 
 		$title = $post->post_title;
-
 		if($enable_spreadsheet_integration == 'yes'){
-			if($google_spreadsheet_id){
-				
+			if($google_spreadsheet_id && $google_spreadsheet_url){
+				//do nothing
 			}else{
 				$spreadSheetID = $this->create_spreadsheet($title);
 				if($spreadSheetID){
@@ -181,14 +180,28 @@ class EspressoGSheet_API {
             	try{
 	            	$drive = new \Google_Service_Drive($client);
 					$permission = new \Google_Service_Drive_Permission();
-					$permission->setType('anyone');
+					//$results = $drive->permissions->listPermissions($spreadsheet->spreadsheetId);
+					$espresso_gsheet_share_email = get_option('espresso_gsheet_share_email', false);
 					$role = get_option('espresso_gsheet_role', 'reader');
-					$permission->setRole($role);
-					$res = $drive->permissions->create(
-						$spreadsheet->spreadsheetId,
-						$permission, 
-						//['transferOwnership' => 'true']
-					);
+					
+					if(filter_var($espresso_gsheet_share_email, FILTER_VALIDATE_EMAIL)){
+						$permission->setEmailAddress(trim($espresso_gsheet_share_email));
+						$permission->setType('group');
+						$permission->setRole($role);
+						$res = $drive->permissions->create(
+							$spreadsheet->spreadsheetId,
+							$permission, 
+						);
+					}else{
+						$permission->setType('anyone');
+						$permission->setRole($role);
+						$res = $drive->permissions->create(
+							$spreadsheet->spreadsheetId,
+							$permission, 
+							//['transferOwnership' => 'true']
+						);
+					}
+
 				}catch(Exception $e) {
 		        	$this->common->gsheet_log( array(
 						'action'	=>	'create_spreadsheet', 

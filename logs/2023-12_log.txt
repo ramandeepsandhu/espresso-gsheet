@@ -31,3 +31,315 @@ Array
 }
 
 )
+Array
+(
+    [datetime] => 2023-12-13 22:06:59
+    [action] => create_spreadsheet
+    [request] => Google\Service\Sheets\Spreadsheet Object
+        (
+            [collection_key:protected] => sheets
+            [dataSourceSchedulesType:protected] => Google\Service\Sheets\DataSourceRefreshSchedule
+            [dataSourceSchedulesDataType:protected] => array
+            [dataSourcesType:protected] => Google\Service\Sheets\DataSource
+            [dataSourcesDataType:protected] => array
+            [developerMetadataType:protected] => Google\Service\Sheets\DeveloperMetadata
+            [developerMetadataDataType:protected] => array
+            [namedRangesType:protected] => Google\Service\Sheets\NamedRange
+            [namedRangesDataType:protected] => array
+            [propertiesType:protected] => Google\Service\Sheets\SpreadsheetProperties
+            [propertiesDataType:protected] => 
+            [sheetsType:protected] => Google\Service\Sheets\Sheet
+            [sheetsDataType:protected] => array
+            [spreadsheetId] => 1JSgxtCdDpm9JSqDC6dn_a_nKbP66shGlP-nb99ymSIw
+            [spreadsheetUrl] => 
+            [internal_gapi_mappings:protected] => Array
+                (
+                )
+
+            [modelData:protected] => Array
+                (
+                )
+
+            [processed:protected] => Array
+                (
+                )
+
+        )
+
+    [response] => {
+  "error": {
+    "code": 400,
+    "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+    "errors": [
+      {
+        "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+        "domain": "global",
+        "reason": "invalid",
+        "location": "permission.emailAddress",
+        "locationType": "other"
+      }
+    ]
+  }
+}
+
+)
+Array
+(
+    [datetime] => 2023-12-13 22:08:01
+    [action] => create_spreadsheet
+    [request] => Google\Service\Sheets\Spreadsheet Object
+        (
+            [collection_key:protected] => sheets
+            [dataSourceSchedulesType:protected] => Google\Service\Sheets\DataSourceRefreshSchedule
+            [dataSourceSchedulesDataType:protected] => array
+            [dataSourcesType:protected] => Google\Service\Sheets\DataSource
+            [dataSourcesDataType:protected] => array
+            [developerMetadataType:protected] => Google\Service\Sheets\DeveloperMetadata
+            [developerMetadataDataType:protected] => array
+            [namedRangesType:protected] => Google\Service\Sheets\NamedRange
+            [namedRangesDataType:protected] => array
+            [propertiesType:protected] => Google\Service\Sheets\SpreadsheetProperties
+            [propertiesDataType:protected] => 
+            [sheetsType:protected] => Google\Service\Sheets\Sheet
+            [sheetsDataType:protected] => array
+            [spreadsheetId] => 1pl2iYjdbJooMrjiIl7Man0T4F3rVy0tf0aUtdJkqjtQ
+            [spreadsheetUrl] => 
+            [internal_gapi_mappings:protected] => Array
+                (
+                )
+
+            [modelData:protected] => Array
+                (
+                )
+
+            [processed:protected] => Array
+                (
+                )
+
+        )
+
+    [response] => {
+  "error": {
+    "code": 400,
+    "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+    "errors": [
+      {
+        "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+        "domain": "global",
+        "reason": "invalid",
+        "location": "permission.emailAddress",
+        "locationType": "other"
+      }
+    ]
+  }
+}
+
+)
+Array
+(
+    [datetime] => 2023-12-13 22:10:38
+    [action] => create_spreadsheet
+    [request] => Google\Service\Sheets\Spreadsheet Object
+        (
+            [collection_key:protected] => sheets
+            [dataSourceSchedulesType:protected] => Google\Service\Sheets\DataSourceRefreshSchedule
+            [dataSourceSchedulesDataType:protected] => array
+            [dataSourcesType:protected] => Google\Service\Sheets\DataSource
+            [dataSourcesDataType:protected] => array
+            [developerMetadataType:protected] => Google\Service\Sheets\DeveloperMetadata
+            [developerMetadataDataType:protected] => array
+            [namedRangesType:protected] => Google\Service\Sheets\NamedRange
+            [namedRangesDataType:protected] => array
+            [propertiesType:protected] => Google\Service\Sheets\SpreadsheetProperties
+            [propertiesDataType:protected] => 
+            [sheetsType:protected] => Google\Service\Sheets\Sheet
+            [sheetsDataType:protected] => array
+            [spreadsheetId] => 1ffozkhg02_dvPf3uENjJltTwlrGwbVmKCrOJDC0v2zI
+            [spreadsheetUrl] => 
+            [internal_gapi_mappings:protected] => Array
+                (
+                )
+
+            [modelData:protected] => Array
+                (
+                )
+
+            [processed:protected] => Array
+                (
+                )
+
+        )
+
+    [response] => {
+  "error": {
+    "code": 400,
+    "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+    "errors": [
+      {
+        "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+        "domain": "global",
+        "reason": "invalid",
+        "location": "permission.emailAddress",
+        "locationType": "other"
+      }
+    ]
+  }
+}
+
+)
+Array
+(
+    [datetime] => 2023-12-13 22:11:35
+    [action] => create_spreadsheet
+    [request] => Google\Service\Sheets\Spreadsheet Object
+        (
+            [collection_key:protected] => sheets
+            [dataSourceSchedulesType:protected] => Google\Service\Sheets\DataSourceRefreshSchedule
+            [dataSourceSchedulesDataType:protected] => array
+            [dataSourcesType:protected] => Google\Service\Sheets\DataSource
+            [dataSourcesDataType:protected] => array
+            [developerMetadataType:protected] => Google\Service\Sheets\DeveloperMetadata
+            [developerMetadataDataType:protected] => array
+            [namedRangesType:protected] => Google\Service\Sheets\NamedRange
+            [namedRangesDataType:protected] => array
+            [propertiesType:protected] => Google\Service\Sheets\SpreadsheetProperties
+            [propertiesDataType:protected] => 
+            [sheetsType:protected] => Google\Service\Sheets\Sheet
+            [sheetsDataType:protected] => array
+            [spreadsheetId] => 1-I-D1LNDsGabjY8dkAdgBK-XrMKxzVfwaoUbNW7DFGc
+            [spreadsheetUrl] => 
+            [internal_gapi_mappings:protected] => Array
+                (
+                )
+
+            [modelData:protected] => Array
+                (
+                )
+
+            [processed:protected] => Array
+                (
+                )
+
+        )
+
+    [response] => {
+  "error": {
+    "code": 400,
+    "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+    "errors": [
+      {
+        "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+        "domain": "global",
+        "reason": "invalid",
+        "location": "permission.emailAddress",
+        "locationType": "other"
+      }
+    ]
+  }
+}
+
+)
+Array
+(
+    [datetime] => 2023-12-13 22:45:02
+    [action] => create_spreadsheet
+    [request] => Google\Service\Sheets\Spreadsheet Object
+        (
+            [collection_key:protected] => sheets
+            [dataSourceSchedulesType:protected] => Google\Service\Sheets\DataSourceRefreshSchedule
+            [dataSourceSchedulesDataType:protected] => array
+            [dataSourcesType:protected] => Google\Service\Sheets\DataSource
+            [dataSourcesDataType:protected] => array
+            [developerMetadataType:protected] => Google\Service\Sheets\DeveloperMetadata
+            [developerMetadataDataType:protected] => array
+            [namedRangesType:protected] => Google\Service\Sheets\NamedRange
+            [namedRangesDataType:protected] => array
+            [propertiesType:protected] => Google\Service\Sheets\SpreadsheetProperties
+            [propertiesDataType:protected] => 
+            [sheetsType:protected] => Google\Service\Sheets\Sheet
+            [sheetsDataType:protected] => array
+            [spreadsheetId] => 1BxYrJCA6JCs6O5A3DecIM4wwOchv1rXrAByPgItjnsw
+            [spreadsheetUrl] => 
+            [internal_gapi_mappings:protected] => Array
+                (
+                )
+
+            [modelData:protected] => Array
+                (
+                )
+
+            [processed:protected] => Array
+                (
+                )
+
+        )
+
+    [response] => {
+  "error": {
+    "code": 400,
+    "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+    "errors": [
+      {
+        "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+        "domain": "global",
+        "reason": "invalid",
+        "location": "permission.emailAddress",
+        "locationType": "other"
+      }
+    ]
+  }
+}
+
+)
+Array
+(
+    [datetime] => 2023-12-13 22:49:10
+    [action] => create_spreadsheet
+    [request] => Google\Service\Sheets\Spreadsheet Object
+        (
+            [collection_key:protected] => sheets
+            [dataSourceSchedulesType:protected] => Google\Service\Sheets\DataSourceRefreshSchedule
+            [dataSourceSchedulesDataType:protected] => array
+            [dataSourcesType:protected] => Google\Service\Sheets\DataSource
+            [dataSourcesDataType:protected] => array
+            [developerMetadataType:protected] => Google\Service\Sheets\DeveloperMetadata
+            [developerMetadataDataType:protected] => array
+            [namedRangesType:protected] => Google\Service\Sheets\NamedRange
+            [namedRangesDataType:protected] => array
+            [propertiesType:protected] => Google\Service\Sheets\SpreadsheetProperties
+            [propertiesDataType:protected] => 
+            [sheetsType:protected] => Google\Service\Sheets\Sheet
+            [sheetsDataType:protected] => array
+            [spreadsheetId] => 1wmYrh1_uTprnf1ksJi4WKCUTZP148Aze_eMr2VHqMUY
+            [spreadsheetUrl] => 
+            [internal_gapi_mappings:protected] => Array
+                (
+                )
+
+            [modelData:protected] => Array
+                (
+                )
+
+            [processed:protected] => Array
+                (
+                )
+
+        )
+
+    [response] => {
+  "error": {
+    "code": 400,
+    "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+    "errors": [
+      {
+        "message": "The specified emailAddress is invalid or not applicable for the given permission type.",
+        "domain": "global",
+        "reason": "invalid",
+        "location": "permission.emailAddress",
+        "locationType": "other"
+      }
+    ]
+  }
+}
+
+)

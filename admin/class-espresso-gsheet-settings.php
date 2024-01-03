@@ -178,6 +178,16 @@ class EspressoGSheet_Settings {
 				update_option('espresso_gsheet_role', '');
 			}
 
+			if(isset($_POST['espresso_gsheet_share_email'])){
+				if(get_option('espresso_gsheet_share_email') === FALSE){
+	                add_option('espresso_gsheet_share_email', $_POST['espresso_gsheet_share_email']);
+	            }else{
+	                update_option('espresso_gsheet_share_email', $_POST['espresso_gsheet_share_email']);
+	            }
+			}else{
+				update_option('espresso_gsheet_share_email', '');
+			}
+
 
 		}
 	}
@@ -221,6 +231,18 @@ class EspressoGSheet_Settings {
 	            )  
 	        );
         }
+
+        add_settings_field( // Option 1
+            'espresso_gsheet_share_email', // Option ID
+            'Email address', // Label
+            array($this, 'field_callback'), // !important - This is where the args go!
+            'espress_gsheet_settings', // Page it will be displayed (General Settings)
+            'espress_gsheet_settings_section', // Name of our section
+            array( 
+                'option_name' => 'espresso_gsheet_share_email',
+                'type' => 'email',
+                'tip' => 'Admin email address where all spreadsheet will be shared.'
+            ));
 
         add_settings_field( // Option 1
             'espresso_gsheet_role', // Option ID
@@ -296,6 +318,9 @@ class EspressoGSheet_Settings {
         	echo '<input class="regular-text" type="'.$args['type'].'" id="'. $args['option_name'] .'" name="'. $args['option_name'] .'" value="Y" ' . $checked . ' />';
         }else{
         	echo '<input class="regular-text" type="'.$args['type'].'" id="'. $args['option_name'] .'" name="'. $args['option_name'] .'" value="' . $option . '" />';
+        	if(isset($args['tip'])){
+        		echo '<div><small>'.$args['tip'].'</small></div>';
+        	}
         }
     }
 
