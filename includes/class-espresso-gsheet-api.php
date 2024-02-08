@@ -72,6 +72,8 @@ class EspressoGSheet_API {
 
 	public $google_account_credential;
 
+	protected $service, $permission, $client, $drive;
+
 	/**
 	 * construct of this class 
 	 * @since    3.6.0
@@ -131,20 +133,69 @@ class EspressoGSheet_API {
 
 		$title = $post->post_title;
 		if($enable_spreadsheet_integration == 'yes'){
+			
+			$this->initClient();
+	 		$folder_id = '';
+	 		
+	 		if(get_option('espresso_gsheet_folder_name')){
+	 			$folder_id = $this->create_folder(get_option('espresso_gsheet_folder_name'));
+		 		if(get_option('espresso_gsheet_google_folder_id')){
+			        update_option('espresso_gsheet_google_folder_id', $folder_id);
+			    }
+			    else {
+			      	add_option('espresso_gsheet_google_folder_id', $folder_id);
+			    }
+	 		}
+	 		
 			if($google_spreadsheet_id && $google_spreadsheet_url){
+				if($folder_id){
+					$files = $this->get_files_inside_folders(get_option('espresso_gsheet_google_folder_id'));
+					if(!isset($files[$google_spreadsheet_id])){
+			 			$this->moveFile($google_spreadsheet_id, $folder_id);
+			 		}
+		 		}
 				//do nothing
 			}else{
-				$spreadSheetID = $this->create_spreadsheet($title);
-				if($spreadSheetID){
-					update_post_meta($post_id, 'google_spreadsheet_url', 'https://docs.google.com/spreadsheets/d/'.$spreadSheetID, false); // unique 
-                	update_post_meta($post_id, 'google_spreadsheet_id', $spreadSheetID, false);
+
+				$google_spreadsheet_id = $this->create_spreadsheet($title);
+				if($google_spreadsheet_id){
+					update_post_meta($post_id, 'google_spreadsheet_url', 'https://docs.google.com/spreadsheets/d/'.$google_spreadsheet_id, false); // unique 
+                	update_post_meta($post_id, 'google_spreadsheet_id', $google_spreadsheet_id, false);
+                	
+                	if($folder_id){
+                		$this->moveFile($google_spreadsheet_id, $folder_id);
+                	}
 				}
 			}
         }
     }
+
+    public function get_files_inside_folders($folderId){
+    	$existingFiles = [];
+      	$optParams = array(
+      		  "q"  => " '${folderId}' in parents and trashed = false"
+      		//'q' => "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
+            //'pageSize' => 10,
+            //'fields' => 'nextPageToken, files(id, name)'
+        );
+
+        $results = $this->drive->files->listFiles($optParams);
+        if (count($results->getFiles()) == 0) {
+            // "No files found.\n";
+        } else {
+            foreach ($results->getFiles() as $file) {
+            	$existingFiles[$file->getId()] = $file->getName();
+            }
+        }
+
+        return $existingFiles;
+    }
+
+
      
 
-    public function getClient(){
+    public function initClient(){
+
     	$client = new \Google_Client();
 		$client->setApplicationName('Google Sheets API');
 		//$client->setScopes([\Google_Service_Sheets::SPREADSHEETS]);
@@ -157,28 +208,108 @@ class EspressoGSheet_API {
 	
 		$client->setAuthConfig(json_decode($credential, true));
 
-		return $client;
+		$this->client 	= $client;
+		$this->service 	= new Google_Service_Sheets($this->client);
+		$this->drive 	= new Google_Service_Drive($this->client);
+
 		
     }
 
-    public function create_spreadsheet($title)
-	{   
-	    $client = $this->getClient();
-	    $service = new Google_Service_Sheets($client);
+    public function checkFolderIfExists( $folder_name = ''){
 
+        $parameters['q'] = "mimeType='application/vnd.google-apps.folder' and name='$folder_name' and trashed=false";
+        $files = $this->drive->files->listFiles($parameters);
+        $folders = [];
+
+        foreach( $files as $k => $file ){
+            $folders[$file->id] = $file->name;
+        }
+        return $folders;
+    }
+
+
+    public function create_folder($folder_name = ''){
+		
+		$folders = $this->checkFolderIfExists($folder_name);
+		if($folders){
+			return key($folders);
+		}else{
+		    try {
+		        
+		        $permission = new \Google_Service_Drive_Permission();
+		        $espresso_gsheet_share_email = get_option('espresso_gsheet_share_email', false);
+				$role = get_option('espresso_gsheet_role', 'reader');
+				
+				if(filter_var($espresso_gsheet_share_email, FILTER_VALIDATE_EMAIL)){
+					$permission->setEmailAddress(trim($espresso_gsheet_share_email));
+					$permission->setType('group');
+					$permission->setRole($role);
+					$permission->allowFileDiscovery;
+				}
+
+		        $fileMetadata = new \Google_Service_Drive_DriveFile(array(
+		            'name' => $folder_name,
+		            'mimeType' => 'application/vnd.google-apps.folder'));
+		        
+		        $file = $this->drive->files->create($fileMetadata, array(
+		            'fields' => 'id'));
+
+		        try {
+					$res = $this->drive->permissions->create($file->id, $permission);
+				}catch (Exception $e) {
+					$this->common->gsheet_log( array(
+						'action'	=>	'create_folder', 
+						'response'	=> $e->getMessage())
+					);
+				}
+
+		        return $file->id;
+
+		    }catch(Exception $e) {
+		    	$this->common->gsheet_log( array(
+					'action'	=>	'create_folder', 
+					'response'	=> 'Error occured while accessing google drive. '. $e->getMessage())
+				);
+		    }
+		}
+	}
+
+	public function moveFile($fileId, $newParentId) {
+	  try {
+
+	    $emptyFileMetadata = new Google_Service_Drive_DriveFile();
+	    // Retrieve the existing parents to remove
+	    //$file = $this->drive->files->get($fileId, array('fields' => 'parents'));
+	    
+	    //$previousParents = join(',', $file->parents);
+	    // Move the file to the new folder
+	    $file = $this->drive->files->update($fileId, $emptyFileMetadata, array(
+	      'addParents' => $newParentId,
+	      //'removeParents' => $previousParents,
+	      'fields' => 'id, parents'));
+	    return $file;
+	  } catch (Exception $e) {
+	    $this->common->gsheet_log( array(
+			'action'	=>	'moveFile', 
+			'response'	=> 'Error occured while moving file to folder. '.$e->getMessage())
+		);
+	  }
+	}
+
+    public function create_spreadsheet($title){   
 	    try{
 	        $spreadsheet = new Google_Service_Sheets_Spreadsheet([
 	            'properties' => [
 	                'title' => $title
 	                ]
 	        ]);
-            $spreadsheet = $service->spreadsheets->create($spreadsheet, [
+            $spreadsheet = $this->service->spreadsheets->create($spreadsheet, [
                 'fields' => 'spreadsheetId'
             ]);
             
             if($spreadsheet->spreadsheetId){
             	try{
-	            	$drive = new \Google_Service_Drive($client);
+
 					$permission = new \Google_Service_Drive_Permission();
 					//$results = $drive->permissions->listPermissions($spreadsheet->spreadsheetId);
 					$espresso_gsheet_share_email = get_option('espresso_gsheet_share_email', false);
@@ -188,14 +319,14 @@ class EspressoGSheet_API {
 						$permission->setEmailAddress(trim($espresso_gsheet_share_email));
 						$permission->setType('group');
 						$permission->setRole($role);
-						$res = $drive->permissions->create(
+						$res = $this->drive->permissions->create(
 							$spreadsheet->spreadsheetId,
 							$permission, 
 						);
 					}else{
 						$permission->setType('anyone');
 						$permission->setRole($role);
-						$res = $drive->permissions->create(
+						$res = $this->drive->permissions->create(
 							$spreadsheet->spreadsheetId,
 							$permission, 
 							//['transferOwnership' => 'true']
@@ -237,11 +368,14 @@ class EspressoGSheet_API {
 			
 			$post_id = $registration->event()->ID();
 			$meta = get_post_meta( $post_id, 'google_spreadsheet_id');
+			$sheet_meta = get_post_meta( $post_id, 'google_spreadsheet_name');
 			$attendee_id =	 $registration->attendee_ID();
 
             if( isset($meta[0]) ) {
 				
             	$spreadsheetId = $meta[0];
+            	$spreadsheetName = (isset($sheet_meta[0]))?$sheet_meta[0]:'Sheet1';
+
   		        $transaction_status = ($transaction->is_completed())?'Completed':'Not Completed';
 		        try{	
 
@@ -259,6 +393,7 @@ class EspressoGSheet_API {
 
 		            $rows[$spreadsheetId][$attendee_id]['Payment Status'] = $transaction_status;
 		            $rows[$spreadsheetId][$attendee_id]['Created'] = date('Y/m/d h:i:s');
+		            $rows[$spreadsheetId][$attendee_id]['Sheet_Name'] = $spreadsheetName;
 
 		        }catch(Exception $e) {
 		        	$this->common->gsheet_log( array(
@@ -276,16 +411,16 @@ class EspressoGSheet_API {
 	}
 
 	function save_entry_to_spreadsheet($attendee_records){
-		$client = $this->getClient();
-		$service = new Google_Service_Sheets($client);
-		$range = 'Sheet1';
-		
+
+		$this->initClient();
 		foreach($attendee_records as $spreadsheetId => $rows){
 			$data = [];
-			$response = $service->spreadsheets_values->get($spreadsheetId, $range);
-			$values_already_exist = $response->getValues();
-			
 			$current_row = array_pop($rows);
+			$range = ($current_row['Sheet_Name'])?$current_row['Sheet_Name']:'Sheet1';
+			unset($current_row['Sheet_Name']);
+
+			$response = $this->service->spreadsheets_values->get($spreadsheetId, $range);
+			$values_already_exist = $response->getValues();
 			
 			$keys = array_keys($current_row);
 			$values = array_values($current_row);
@@ -294,12 +429,12 @@ class EspressoGSheet_API {
 				$data[] = $keys;
 			}
 			$data[] = $values;
-			$range = 'Sheet1';
+
 			try{	
 				$valueRange = new \Google_Service_Sheets_ValueRange();
 				$valueRange->setValues($data);
 				$options = ['valueInputOption' => 'USER_ENTERED'];
-				$service->spreadsheets_values->append($spreadsheetId, $range, $valueRange, $options);
+				$this->service->spreadsheets_values->append($spreadsheetId, $range, $valueRange, $options);
 										  
 			}catch(Exception $e) {
 				

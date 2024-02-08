@@ -188,6 +188,16 @@ class EspressoGSheet_Settings {
 				update_option('espresso_gsheet_share_email', '');
 			}
 
+			if(isset($_POST['espresso_gsheet_folder_name'])){
+				if(get_option('espresso_gsheet_folder_name') === FALSE){
+	                add_option('espresso_gsheet_folder_name', $_POST['espresso_gsheet_folder_name']);
+	            }else{
+	                update_option('espresso_gsheet_folder_name', $_POST['espresso_gsheet_folder_name']);
+	            }
+			}else{
+				update_option('espresso_gsheet_folder_name', '');
+			}
+
 
 		}
 	}
@@ -243,6 +253,19 @@ class EspressoGSheet_Settings {
                 'type' => 'email',
                 'tip' => 'Admin email address where all spreadsheet will be shared.'
             ));
+
+        add_settings_field( // Option 1
+            'espresso_gsheet_folder_name', // Option ID
+            'Folder Name', // Label
+            array($this, 'field_callback'), // !important - This is where the args go!
+            'espress_gsheet_settings', // Page it will be displayed (General Settings)
+            'espress_gsheet_settings_section', // Name of our section
+            array( 
+                'option_name' => 'espresso_gsheet_folder_name',
+                'type' => 'text',
+                'tip' => 'If provided all spreadsheet will be created in this folder.'
+            ));
+
 
         add_settings_field( // Option 1
             'espresso_gsheet_role', // Option ID
